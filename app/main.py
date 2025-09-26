@@ -119,7 +119,7 @@ async def http_exception_handler(request: Request, exc: HTTPException):
             message=exc.detail,
             timestamp=datetime.now(timezone.utc),
             status_code=exc.status_code
-        ).dict()
+        ).model_dump()
     )
 
 
@@ -135,7 +135,7 @@ async def general_exception_handler(request: Request, exc: Exception):
             message="An unexpected error occurred",
             timestamp=datetime.now(timezone.utc),
             status_code=500
-        ).dict()
+        ).model_dump()
     )
 
 

@@ -2,7 +2,7 @@
 
 from typing import List, Optional
 from datetime import datetime
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, field_validator, ConfigDict
 
 
 class WeatherCondition(BaseModel):
@@ -167,18 +167,22 @@ class WeatherQueryParams(BaseModel):
     lat: Optional[float] = Field(None, description="Latitude", ge=-90, le=90)
     lon: Optional[float] = Field(None, description="Longitude", ge=-180, le=180)
     
-    @validator('city')
-    def validate_city(cls, v, values):
-        if v and (values.get('lat') is not None or values.get('lon') is not None):
+    @field_validator('city')
+    @classmethod
+    def validate_city(cls, v, info):
+        data = info.data if hasattr(info, 'data') else {}
+        if v and (data.get('lat') is not None or data.get('lon') is not None):
             raise ValueError("Cannot specify both city and coordinates")
         return v
     
-    @validator('lon')
-    def validate_coordinates(cls, v, values):
-        lat = values.get('lat')
+    @field_validator('lon')
+    @classmethod  
+    def validate_coordinates(cls, v, info):
+        data = info.data if hasattr(info, 'data') else {}
+        lat = data.get('lat')
         if (lat is None) != (v is None):
             raise ValueError("Both latitude and longitude must be provided for coordinate-based queries")
-        if v is None and values.get('city') is None:
+        if v is None and data.get('city') is None:
             raise ValueError("Either city name or coordinates (lat, lon) must be provided")
         return v
 
