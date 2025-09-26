@@ -25,7 +25,6 @@ FROM python:3.11-slim as production
 # Set environment variables
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
-    PATH="/root/.local/bin:$PATH" \
     PORT=8080
 
 # Install runtime dependencies only
@@ -40,17 +39,17 @@ RUN useradd --create-home --shell /bin/bash app
 # Set working directory
 WORKDIR /app
 
-# Copy Python packages from builder stage
-COPY --from=builder /root/.local /root/.local
+# Copy Python packages from builder stage to app user's home
+COPY --from=builder --chown=app:app /root/.local /home/app/.local
 
 # Copy application code
-COPY app/ ./app/
-
-# Change ownership to app user
-RUN chown -R app:app /app
+COPY --chown=app:app app/ ./app/
 
 # Switch to non-root user
 USER app
+
+# Add user's local bin to PATH
+ENV PATH="/home/app/.local/bin:$PATH"
 
 # Expose port 8080 (required for Killercoda)
 EXPOSE 8080
