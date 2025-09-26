@@ -1,0 +1,46 @@
+version: '3.8'
+
+services:
+  weather-api:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      - OPENWEATHERMAP_API_KEY=${OPENWEATHERMAP_API_KEY:-}
+      - DEBUG=true
+      - HOST=0.0.0.0
+      - PORT=8080
+    volumes:
+      # Mount source code for development (hot reload)
+      - ./app:/app/app:ro
+      # Mount tests for development
+      - ./tests:/app/tests:ro
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    networks:
+      - weather-network
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8080 --reload
+
+  # Development tools container
+  test-runner:
+    build: .
+    volumes:
+      - ./app:/app/app:ro
+      - ./tests:/app/tests:ro
+      - ./docs:/app/docs:ro
+    environment:
+      - OPENWEATHERMAP_API_KEY=${OPENWEATHERMAP_API_KEY:-}
+    networks:
+      - weather-network
+    profiles:
+      - testing
+    command: tail -f /dev/null  # Keep container running for manual test execution
+
+networks:
+  weather-network:
+    driver: bridge
