@@ -56,16 +56,18 @@ async def get_current_weather(
                 detail="Cannot specify both city and coordinates"
             )
         
-        if not city and (lat is None or lon is None):
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Either city name or both latitude and longitude must be provided"
-            )
-        
+        # Check for incomplete coordinates first
         if (lat is None) != (lon is None):
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Both latitude and longitude must be provided for coordinate-based queries"
+                detail="Both latitude and longitude must be provided"
+            )
+        
+        # Check if neither city nor coordinates are provided
+        if not city and lat is None and lon is None:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Either city name or both latitude and longitude must be provided"
             )
         
         # Fetch weather data
@@ -98,6 +100,10 @@ async def get_current_weather(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail="Weather service temporarily unavailable"
         )
+    
+    except HTTPException:
+        # Re-raise HTTPExceptions (like validation errors) without modification
+        raise
     
     except Exception as e:
         logger.error(f"Unexpected error in get_current_weather: {str(e)}")
@@ -181,6 +187,10 @@ async def get_weather_forecast(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail="Weather service temporarily unavailable"
         )
+    
+    except HTTPException:
+        # Re-raise HTTPExceptions (like validation errors) without modification
+        raise
     
     except Exception as e:
         logger.error(f"Unexpected error in get_weather_forecast: {str(e)}")

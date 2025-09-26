@@ -18,7 +18,7 @@ def run_command(cmd, description):
         result = subprocess.run(cmd, shell=True, capture_output=True, text=True, cwd=Path(__file__).parent)
         
         if result.returncode == 0:
-            print("✅ PASSED")
+            print("[PASS] PASSED")
             if result.stdout:
                 print(result.stdout)
         else:
@@ -52,19 +52,19 @@ def main():
     
     # Test 2: Models and Configuration Tests  
     results.append(run_command(
-        "python -c \"from app.models import *; from app.config import get_settings; print('✅ All imports successful')\"",
+        "python -c \"from app.models import *; from app.config import get_settings; print('[PASS] All imports successful')\"",
         "Import and Model Validation Tests"
     ))
     
     # Test 3: Configuration Test
     results.append(run_command(
-        "python -c \"from app.config import get_settings; settings = get_settings(); print(f'✅ Config loaded - Debug: {settings.DEBUG}')\"",
+        "python -c \"from app.config import get_settings; settings = get_settings(); print(f'[PASS] Config loaded - Debug: {settings.debug}')\"",
         "Configuration Loading Test"
     ))
     
     # Test 4: Basic Application Start Test
     results.append(run_command(
-        "python -c \"from app.main import app; print('✅ FastAPI app created successfully')\"",
+        "python -c \"from app.main import app; print('[PASS] FastAPI app created successfully')\"",
         "FastAPI Application Creation Test"
     ))
     
@@ -94,7 +94,7 @@ async def test_mock_weather():
     with patch.object(service, "_make_request", return_value=mock_data):
         with patch.object(service, "_get_api_key", return_value="test_key"):
             weather = await service.get_current_weather_by_city("London")
-            print(f"✅ Mock weather test passed - Temp: {weather.temperature}°C, City: {weather.city}")
+            print(f"[PASS] Mock weather test passed - Temp: {weather.temperature}C, City: {weather.city}")
 
 asyncio.run(test_mock_weather())
 '''
@@ -112,7 +112,7 @@ asyncio.run(test_mock_weather())
     passed = sum(results)
     total = len(results)
     
-    print(f"✅ Passed: {passed}/{total}")
+    print(f"[PASS] Passed: {passed}/{total}")
     print(f"❌ Failed: {total - passed}/{total}")
     
     if passed == total:

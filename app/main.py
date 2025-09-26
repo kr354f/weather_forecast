@@ -112,14 +112,16 @@ async def http_exception_handler(request: Request, exc: HTTPException):
     """Handle HTTP exceptions with consistent error format."""
     logger.error(f"HTTP {exc.status_code} error at {request.url}: {exc.detail}")
     
+    error_response = ErrorResponse(
+        error="HTTP_ERROR",
+        message=exc.detail,
+        timestamp=datetime.now(timezone.utc),
+        status_code=exc.status_code
+    )
+    
     return JSONResponse(
         status_code=exc.status_code,
-        content=ErrorResponse(
-            error="HTTP_ERROR",
-            message=exc.detail,
-            timestamp=datetime.now(timezone.utc),
-            status_code=exc.status_code
-        ).model_dump()
+        content=error_response.model_dump(mode='json')
     )
 
 
@@ -128,14 +130,16 @@ async def general_exception_handler(request: Request, exc: Exception):
     """Handle unexpected exceptions."""
     logger.error(f"Unexpected error at {request.url}: {str(exc)}", exc_info=True)
     
+    error_response = ErrorResponse(
+        error="INTERNAL_SERVER_ERROR",
+        message="An unexpected error occurred",
+        timestamp=datetime.now(timezone.utc),
+        status_code=500
+    )
+    
     return JSONResponse(
         status_code=500,
-        content=ErrorResponse(
-            error="INTERNAL_SERVER_ERROR",
-            message="An unexpected error occurred",
-            timestamp=datetime.now(timezone.utc),
-            status_code=500
-        ).model_dump()
+        content=error_response.model_dump(mode='json')
     )
 
 
